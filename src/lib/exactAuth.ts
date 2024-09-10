@@ -16,19 +16,15 @@ export async function getAuthorizationUrl() {
 }
 
 export async function exchangeCodeForToken(code: string) {
-  const response = await fetch(EXACT_TOKEN_URL, {
+  const response = await fetch('/api/auth/exchange-token', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'authorization_code',
-      client_id: PUBLIC_EXACT_CLIENT_ID ?? '',
-      client_secret: PUBLIC_EXACT_CLIENT_SECRET ?? '',
-      code,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
   });
 
   if (!response.ok) {
-    throw new Error('Failed to exchange code for token');
+    const errorData = await response.json();
+    throw new Error(`Failed to exchange code for token: ${errorData.details || errorData.error}`);
   }
 
   return response.json();
@@ -47,12 +43,11 @@ export function removeAuthToken() {
 }
 
 export async function getUserInfo(token: string) {
-  const response = await fetch('https://start.exactonline.nl/api/v1/current/Me', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await fetch(`/api/auth/user-info?token=${encodeURIComponent(token)}`);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch user info');
+    const errorData = await response.json();
+    throw new Error(`Failed to fetch user info: ${errorData.details || errorData.error}`);
   }
 
   return response.json();
