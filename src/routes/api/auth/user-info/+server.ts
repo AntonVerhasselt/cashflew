@@ -1,24 +1,21 @@
 import { json } from '@sveltejs/kit';
+import { getUserInfo } from '$lib/exactAuth';
 
-const EXACT_USER_INFO_URL = 'https://start.exactonline.nl/api/v1/current/Me';
-
-export async function GET({ request, url }: { request: Request, url: URL }) {
+export async function GET({ url }: { url: URL }) {
     const token = url.searchParams.get('token');
 
     if (!token) {
         return json({ error: 'No token provided' }, { status: 400 });
     }
 
-    const response = await fetch(EXACT_USER_INFO_URL, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Exact API error:', errorText);
-        return json({ error: 'Failed to fetch user info', details: errorText }, { status: response.status });
+    try {
+        const userData = await getUserInfo(token);
+        return json(userData);
+    } catch (error) {
+        console.error('Error in user info request:', error);
+        if (error instanceof Error) {
+            return json({ error: error.message }, { status: 500 });
+        }
+        return json({ error: 'Internal server error' }, { status: 500 });
     }
-
-    const userData = await response.json();
-    return json(userData);
 }
