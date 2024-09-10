@@ -1,15 +1,22 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { insertOne, findOne } from '$lib/dbOperations';
+import { insertOne, findOne, updateOne } from '$lib/dbOperations';
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const userData = await request.json();
-    const result = await insertOne('users', userData);
-    return json({ success: true, id: result.insertedId.toString() });
+    const existingUser = await findOne('users', { sub: userData.sub });
+
+    if (existingUser) {
+      await updateOne('users', { sub: userData.sub }, userData);
+      return json({ success: true, id: existingUser._id.toString() });
+    } else {
+      const result = await insertOne('users', userData);
+      return json({ success: true, id: result.insertedId.toString() });
+    }
   } catch (error) {
-    console.error('Error creating user:', error);
-    return json({ success: false, error: 'Error creating user' }, { status: 500 });
+    console.error('Error creating/updating user:', error);
+    return json({ success: false, error: 'Error creating/updating user' }, { status: 500 });
   }
 };
 

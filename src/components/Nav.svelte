@@ -1,11 +1,13 @@
 <script>
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
+  import { removeAuthToken } from '$lib/exactAuth';
+  import { goto } from '$app/navigation';
+
+  export let user;
 
   let showMenu = false;
-  let userImage = 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png';
   let menuContainer;
-  let userName = 'Guest';
 
   onMount(() => {
     const handleClickOutside = (event) => {
@@ -31,8 +33,8 @@
   }
 
   function handleLogout() {
-    closeMenu();
-    // Implement proper logout logic here when you add authentication
+    removeAuthToken();
+    goto('/login');
   }
 </script>
 
@@ -62,8 +64,8 @@
       {/if}
       <div class="flex items-center justify-between rounded-lg cursor-pointer" on:click={toggleMenu}>
         <div class="flex items-center overflow-hidden mr-1">
-          <img src={userImage} alt="User" class="w-6 h-6 rounded-full flex-shrink-0 mr-2" />
-          <span class="text-xs font-medium truncate">{userName}</span>
+          <img src={user.picture || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'} alt="User" class="w-6 h-6 rounded-full flex-shrink-0 mr-2" />
+          <span class="text-xs font-medium truncate">{user.name}</span>
         </div>
         <span class="text-gray-500 ml-1">⋮</span>
       </div>
