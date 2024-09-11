@@ -1,36 +1,54 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { insertOne, findOne, updateOne } from '$lib/dbOperations';
+import { MongoClient, ObjectId } from 'mongodb';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+const client = new MongoClient(process.env.MONGO_URI || '');
+const db = client.db(process.env.DB_NAME);
+const users = db.collection('users');
 
 export const POST: RequestHandler = async ({ request }) => {
-  try {
-    const userData = await request.json();
-    const existingUser = await findOne('users', { sub: userData.sub });
+    try {
+        const userData = await request.json();
+        const newUser = {
+            _id: new ObjectId(),
+            ...userData,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
 
-    if (existingUser) {
-      await updateOne('users', { sub: userData.sub }, userData);
-      return json({ success: true, id: existingUser._id.toString() });
-    } else {
-      const result = await insertOne('users', userData);
-      return json({ success: true, id: result.insertedId.toString() });
+        await users.insertOne(newUser);
+        return json({ message: 'User created successfully', user: newUser }, { status: 201 });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        return json({ error: 'Failed to create user' }, { status: 500 });
     }
-  } catch (error) {
-    console.error('Error creating/updating user:', error);
-    return json({ success: false, error: 'Error creating/updating user' }, { status: 500 });
-  }
 };
 
-export const GET: RequestHandler = async ({ url }) => {
-  const sub = url.searchParams.get('sub');
-  if (!sub) {
-    return json({ error: 'Missing sub parameter' }, { status: 400 });
-  }
+export const PUT: RequestHandler = async ({ request }) => {
+    try {
+        const { _id, createdAt, ...updateData } = await request.json();
+        if (!_id) {
+            return json({ error: 'User ID is required' }, { status: 400 });
+        }
 
-  try {
-    const user = await findOne('users', { sub });
-    return json({ user });
-  } catch (error) {
-    console.error('Error finding user:', error);
-    return json({ error: 'Error finding user' }, { status: 500 });
-  }
+        const result = await users.updateOne(
+            { _id: new ObjectId(_id) },
+            { 
+                $set: { ...updateData, updatedAt: new Date() }
+            }
+        );
+
+        if (result.matchedCount === 0) {
+            return json({ error: 'User not found' }, { status: 404 });
+        }
+
+        return json({ message: 'User updated successfully' }, { status: 200 });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return json({ error: 'Failed to update user' }, { status: 500 });
+    }
 };
