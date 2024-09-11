@@ -85,3 +85,7 @@ export const clearSession = () => {
     console.log('Session cleared:', get(sessionStore));
   }
 };
+
+export const getSession = (): SessionState => {
+  return get(sessionStore);
+};

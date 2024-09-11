@@ -13,9 +13,23 @@
 	let showMenu = false;
 	let menuContainer: HTMLElement;
 	let session: Session;
+	let userInfo: {
+		FullName: string;
+		PictureUrl: string;
+		Email: string;
+	} | null = null;
 
 	sessionStore.subscribe(value => {
 		session = value;
+		if (session.userInfo && session.userInfo.d && session.userInfo.d.results && session.userInfo.d.results[0]) {
+			userInfo = {
+				FullName: session.userInfo.d.results[0].FullName,
+				PictureUrl: session.userInfo.d.results[0].PictureUrl,
+				Email: session.userInfo.d.results[0].Email
+			};
+		} else {
+			userInfo = null;
+		}
 	});
 
 	onMount(() => {
@@ -63,6 +77,12 @@
 						<span>Emails</span>
 					</a>
 				</li>
+				<li class="mb-3">
+					<a href="/invoices" class="flex items-center text-gray-700 hover:text-gray-900">
+						<span class="mr-2">📄</span>
+						<span>Invoices</span>
+					</a>
+				</li>
 			</ul>
 
 			<div class="mt-auto relative" bind:this={menuContainer}>
@@ -88,13 +108,25 @@
 					on:click={toggleMenu}
 				>
 					<div class="flex items-center overflow-hidden mr-1">
-						<!-- TODO: Replace with actual user image and name -->
-						<img
-							src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
-							alt="User"
-							class="w-6 h-6 rounded-full flex-shrink-0 mr-2"
-						/>
-						<span class="text-xs font-medium truncate">John Doe</span>
+						{#if userInfo}
+							<img
+								src={userInfo.PictureUrl}
+								alt={userInfo.FullName}
+								class="w-6 h-6 rounded-full flex-shrink-0 mr-2"
+							/>
+							<span class="text-xs font-medium truncate">
+								{userInfo?.FullName ?? 'Unknown User'}
+							</span>
+						{:else}
+							<img
+								src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+								alt="User"
+								class="w-6 h-6 rounded-full flex-shrink-0 mr-2"
+							/>
+							<span class="text-xs font-medium truncate">
+								Unknown Username
+							</span>
+						{/if}
 					</div>
 					<span class="text-gray-500 ml-1">⋮</span>
 				</button>
