@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { getAuthorizationUrl } from '$lib/exactAuth';
-
   async function handleLogin() {
-    const authUrl = await getAuthorizationUrl();
-    window.location.href = authUrl;
+    // TODO: Implement login with Exact
+    console.log('Login with Exact clicked');
   }
 </script>
 

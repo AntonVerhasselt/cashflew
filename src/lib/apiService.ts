@@ -1,5 +1,3 @@
-import { getCookie } from './cookieUtils';
-
 async function request(endpoint: string, options: RequestInit = {}) {
   console.log(`[API Request] Endpoint: ${endpoint}, Method: ${options.method || 'GET'}`);
   

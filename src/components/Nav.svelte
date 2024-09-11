@@ -1,17 +1,13 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { removeAuthToken } from '$lib/exactAuth';
-  import { goto } from '$app/navigation';
-
-  export let user;
 
   let showMenu = false;
-  let menuContainer;
+  let menuContainer: HTMLElement;
 
   onMount(() => {
-    const handleClickOutside = (event) => {
-      if (menuContainer && !menuContainer.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuContainer && !menuContainer.contains(event.target as Node)) {
         showMenu = false;
       }
     };
@@ -27,14 +23,14 @@
     showMenu = false;
   }
 
-  function toggleMenu(event) {
+  function toggleMenu(event: MouseEvent) {
     event.stopPropagation();
     showMenu = !showMenu;
   }
 
+  // TODO: Implement actual logout functionality
   function handleLogout() {
-    removeAuthToken();
-    goto('/login');
+    console.log('Logout clicked');
   }
 </script>
 
@@ -62,13 +58,14 @@
           <button on:click={handleLogout} class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 text-xs">Log out</button>
         </div>
       {/if}
-      <div class="flex items-center justify-between rounded-lg cursor-pointer" on:click={toggleMenu}>
+      <button class="flex items-center justify-between rounded-lg cursor-pointer w-full text-left" on:click={toggleMenu}>
         <div class="flex items-center overflow-hidden mr-1">
-          <img src={user.picture || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'} alt="User" class="w-6 h-6 rounded-full flex-shrink-0 mr-2" />
-          <span class="text-xs font-medium truncate">{user.name}</span>
+          <!-- TODO: Replace with actual user image and name -->
+          <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png" alt="User" class="w-6 h-6 rounded-full flex-shrink-0 mr-2" />
+          <span class="text-xs font-medium truncate">John Doe</span>
         </div>
         <span class="text-gray-500 ml-1">⋮</span>
-      </div>
+      </button>
     </div>
   </div>
 </nav>
